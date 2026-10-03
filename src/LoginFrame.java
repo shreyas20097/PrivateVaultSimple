@@ -10,6 +10,7 @@ public class LoginFrame extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private JButton registerButton;
     private JLabel statusLabel;
 
     private UserManager userManager;
@@ -46,11 +47,22 @@ public class LoginFrame extends JFrame {
         loginButton.setBounds(110, 90, 100, 30);
         add(loginButton);
 
+        registerButton = new JButton("Register");
+        registerButton.setBounds(220, 90, 100, 30);
+        add(registerButton);
+
         statusLabel = new JLabel("");
-        statusLabel.setBounds(20, 130, 300, 25);
+        statusLabel.setBounds(20, 130, 300, 40);
         add(statusLabel);
 
         loginButton.addActionListener(e -> tryLogin());
+        registerButton.addActionListener(e -> openRegister());
+    }
+
+    private void openRegister() {
+
+        RegisterFrame registerFrame = new RegisterFrame(userManager);
+        registerFrame.setVisible(true);
     }
 
     private void tryLogin() {
