@@ -15,6 +15,7 @@ public class MainFrame extends JFrame {
     private JButton saveButton;
     private JButton viewAllButton;
     private JButton verifyButton;
+    private JButton updateButton;
     private JTextArea outputArea;
 
     private RecordManager recordManager;
@@ -58,6 +59,10 @@ public class MainFrame extends JFrame {
         verifyButton.setBounds(280, 160, 120, 30);
         add(verifyButton);
 
+        updateButton = new JButton("Update Record");
+        updateButton.setBounds(410, 160, 130, 30);
+        add(updateButton);
+
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         JScrollPane outputScroll = new JScrollPane(outputArea);
@@ -67,6 +72,13 @@ public class MainFrame extends JFrame {
         saveButton.addActionListener(e -> saveRecord());
         viewAllButton.addActionListener(e -> viewAll());
         verifyButton.addActionListener(e -> verifyAll());
+        updateButton.addActionListener(e -> openUpdate());
+    }
+
+    private void openUpdate() {
+
+        UpdateFrame updateFrame = new UpdateFrame(recordManager);
+        updateFrame.setVisible(true);
     }
 
     private void saveRecord() {

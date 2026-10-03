@@ -70,6 +70,56 @@ public class RecordManager {
         return records;
     }
 
+    public Record getRecord(int recordId) throws SQLException {
+
+        PreparedStatement ps = connection.prepareStatement("SELECT * FROM vault_records WHERE record_id = ?");
+        ps.setInt(1, recordId);
+
+        ResultSet rs = ps.executeQuery();
+
+        Record record = null;
+        if (rs.next()) {
+            record = new Record(
+                    rs.getInt("record_id"),
+                    rs.getString("title"),
+                    rs.getString("content"),
+                    rs.getString("created_at"),
+                    rs.getString("hash")
+            );
+        }
+
+        rs.close();
+        ps.close();
+
+        return record;
+    }
+
+    public boolean updateRecord(int recordId, String newTitle, String newContent) throws SQLException {
+
+        if (newTitle == null || newTitle.trim().isEmpty() || newContent == null || newContent.trim().isEmpty()) {
+            return false;
+        }
+
+        Record existing = getRecord(recordId);
+        if (existing == null) {
+            return false;
+        }
+
+        String newHash = HashUtil.generateHash(newContent.trim());
+
+        String sql = "UPDATE vault_records SET title = ?, content = ?, hash = ? WHERE record_id = ?";
+
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, newTitle.trim());
+        ps.setString(2, newContent.trim());
+        ps.setString(3, newHash);
+        ps.setInt(4, recordId);
+        int rows = ps.executeUpdate();
+        ps.close();
+
+        return rows > 0;
+    }
+
     public boolean verifyRecord(Record record) {
         String current = HashUtil.generateHash(record.getContent());
         return current.equals(record.getHash());
