@@ -41,34 +41,7 @@ public class DatabaseManager {
 
         stmt.close();
 
-        migrateSchema();
         seedDefaultUser();
-    }
-
-    private void migrateSchema() throws SQLException {
-
-        Statement stmt = connection.createStatement();
-
-        ResultSet rs = stmt.executeQuery("PRAGMA table_info(vault_records)");
-
-        boolean hasUserId = false;
-        while (rs.next()) {
-            if ("user_id".equals(rs.getString("name"))) {
-                hasUserId = true;
-            }
-        }
-        rs.close();
-
-        if (!hasUserId) {
-            stmt.executeUpdate("ALTER TABLE vault_records ADD COLUMN user_id INTEGER");
-            stmt.executeUpdate(
-                    "UPDATE vault_records SET user_id = " +
-                            "(SELECT MIN(user_id) FROM users) WHERE user_id IS NULL"
-            );
-            System.out.println("Database upgraded: added user_id column to vault_records.");
-        }
-
-        stmt.close();
     }
 
     private void seedDefaultUser() throws SQLException {
