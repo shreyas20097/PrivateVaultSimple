@@ -13,6 +13,7 @@ public class UpdateFrame extends JFrame {
     private JTextField titleField;
     private JTextArea contentArea;
     private JButton updateButton;
+    private JButton closeButton;
     private JLabel statusLabel;
 
     private RecordManager recordManager;
@@ -23,6 +24,7 @@ public class UpdateFrame extends JFrame {
 
         setTitle("PrivateVaultSimple - Update Record");
         setSize(600, 450);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
 
@@ -59,12 +61,17 @@ public class UpdateFrame extends JFrame {
         updateButton.setBounds(100, 290, 140, 30);
         add(updateButton);
 
+        closeButton = new JButton("Close");
+        closeButton.setBounds(250, 290, 100, 30);
+        add(closeButton);
+
         statusLabel = new JLabel("");
         statusLabel.setBounds(20, 335, 540, 25);
         add(statusLabel);
 
         loadButton.addActionListener(e -> loadRecord());
         updateButton.addActionListener(e -> updateRecord());
+        closeButton.addActionListener(e -> dispose());
     }
 
     private void loadRecord() {
@@ -109,13 +116,15 @@ public class UpdateFrame extends JFrame {
             if (updated) {
                 Record fresh = recordManager.getRecord(recordId);
 
+                String message;
                 if (fresh != null && recordManager.verifyRecord(fresh)) {
-                    statusLabel.setText("Record " + recordId + " updated. New hash generated. Integrity: VALID.");
+                    message = "Record " + recordId + " updated. New hash generated. Integrity: VALID.";
                 } else {
-                    statusLabel.setText("Record " + recordId + " updated. Warning: integrity check failed.");
+                    message = "Record " + recordId + " updated. Warning: integrity check failed.";
                 }
 
-                JOptionPane.showMessageDialog(this, "Record " + recordId + " updated successfully.");
+                JOptionPane.showMessageDialog(this, message);
+                dispose();
             } else {
                 statusLabel.setText("Update failed. Check the ID and that fields are not empty.");
             }

@@ -20,6 +20,7 @@ public class RegisterFrame extends JFrame {
 
         setTitle("PrivateVaultSimple - Register");
         setSize(360, 260);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
 
