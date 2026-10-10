@@ -74,7 +74,7 @@ public class LoginFrame extends JFrame {
             User user = userManager.login(username, password);
 
             if (user != null) {
-                MainFrame mainFrame = new MainFrame(recordManager);
+                MainFrame mainFrame = new MainFrame(recordManager, user.getUid());
                 mainFrame.setVisible(true);
                 dispose();
             } else {

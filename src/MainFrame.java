@@ -19,10 +19,12 @@ public class MainFrame extends JFrame {
     private JTextArea outputArea;
 
     private RecordManager recordManager;
+    private int uid;
 
-    public MainFrame(RecordManager recordManager) {
+    public MainFrame(RecordManager recordManager, int uid) {
 
         this.recordManager = recordManager;
+        this.uid = uid;
 
         setTitle("PrivateVaultSimple - Vault");
         setSize(650, 550);
@@ -77,7 +79,7 @@ public class MainFrame extends JFrame {
 
     private void openUpdate() {
 
-        UpdateFrame updateFrame = new UpdateFrame(recordManager);
+        UpdateFrame updateFrame = new UpdateFrame(recordManager, uid);
         updateFrame.setVisible(true);
     }
 
@@ -92,7 +94,7 @@ public class MainFrame extends JFrame {
         }
 
         try {
-            Record record = recordManager.addRecord(title, content);
+            Record record = recordManager.addRecord(uid, title, content);
             JOptionPane.showMessageDialog(this, "Saved! Record ID: " + record.getRecordId());
             titleField.setText("");
             contentArea.setText("");
@@ -104,7 +106,7 @@ public class MainFrame extends JFrame {
     private void viewAll() {
 
         try {
-            ArrayList<Record> records = recordManager.getAllRecords();
+            ArrayList<Record> records = recordManager.getAllRecords(uid);
 
             outputArea.setText("");
 
@@ -130,7 +132,7 @@ public class MainFrame extends JFrame {
     private void verifyAll() {
 
         try {
-            ArrayList<Record> records = recordManager.getAllRecords();
+            ArrayList<Record> records = recordManager.getAllRecords(uid);
 
             outputArea.setText("");
 

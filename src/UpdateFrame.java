@@ -17,10 +17,12 @@ public class UpdateFrame extends JFrame {
     private JLabel statusLabel;
 
     private RecordManager recordManager;
+    private int uid;
 
-    public UpdateFrame(RecordManager recordManager) {
+    public UpdateFrame(RecordManager recordManager, int uid) {
 
         this.recordManager = recordManager;
+        this.uid = uid;
 
         setTitle("PrivateVaultSimple - Update Record");
         setSize(600, 450);
@@ -79,7 +81,7 @@ public class UpdateFrame extends JFrame {
         try {
             int recordId = Integer.parseInt(idField.getText().trim());
 
-            Record record = recordManager.getRecord(recordId);
+            Record record = recordManager.getRecord(uid, recordId);
 
             if (record == null) {
                 statusLabel.setText("No record found with ID " + recordId + ".");
@@ -111,10 +113,10 @@ public class UpdateFrame extends JFrame {
             String newTitle = titleField.getText();
             String newContent = contentArea.getText();
 
-            boolean updated = recordManager.updateRecord(recordId, newTitle, newContent);
+            boolean updated = recordManager.updateRecord(uid, recordId, newTitle, newContent);
 
             if (updated) {
-                Record fresh = recordManager.getRecord(recordId);
+                Record fresh = recordManager.getRecord(uid, recordId);
 
                 String message;
                 if (fresh != null && recordManager.verifyRecord(fresh)) {

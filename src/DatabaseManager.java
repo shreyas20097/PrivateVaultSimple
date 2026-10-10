@@ -32,6 +32,7 @@ public class DatabaseManager {
         stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS vault_records (" +
                         "record_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "user_id INTEGER," +
                         "title TEXT," +
                         "content TEXT," +
                         "created_at TEXT," +
