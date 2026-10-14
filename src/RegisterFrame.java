@@ -1,6 +1,11 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
@@ -19,44 +24,68 @@ public class RegisterFrame extends JFrame {
         this.userManager = userManager;
 
         setTitle("PrivateVaultSimple - Register");
-        setSize(360, 260);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(null);
+        setResizable(false);
+
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+        main.setBackground(Theme.BACKGROUND);
+        Theme.addPadding(main, 15);
+        setContentPane(main);
+
+        JLabel heading = new JLabel("Create Account");
+        heading.setFont(Theme.TITLE_FONT);
+        heading.setForeground(Theme.TEAL);
+
+        JPanel form = new JPanel(new GridLayout(3, 2, 8, 8));
+        form.setBackground(Theme.BACKGROUND);
 
         JLabel userLabel = new JLabel("Username:");
-        userLabel.setBounds(20, 15, 90, 25);
-        add(userLabel);
-
-        usernameField = new JTextField();
-        usernameField.setBounds(130, 15, 200, 25);
-        add(usernameField);
+        userLabel.setForeground(Theme.TEXT);
+        usernameField = new JTextField(15);
 
         JLabel passLabel = new JLabel("Password:");
-        passLabel.setBounds(20, 50, 90, 25);
-        add(passLabel);
-
-        passwordField = new JPasswordField();
-        passwordField.setBounds(130, 50, 200, 25);
-        add(passwordField);
+        passLabel.setForeground(Theme.TEXT);
+        passwordField = new JPasswordField(15);
 
         JLabel confirmLabel = new JLabel("Confirm:");
-        confirmLabel.setBounds(20, 85, 90, 25);
-        add(confirmLabel);
+        confirmLabel.setForeground(Theme.TEXT);
+        confirmField = new JPasswordField(15);
 
-        confirmField = new JPasswordField();
-        confirmField.setBounds(130, 85, 200, 25);
-        add(confirmField);
+        form.add(userLabel);
+        form.add(usernameField);
+        form.add(passLabel);
+        form.add(passwordField);
+        form.add(confirmLabel);
+        form.add(confirmField);
+        // One wrapper in NORTH: heading on top, form below.
+        JPanel top = new JPanel(new BorderLayout(0, 10));
+        top.setBackground(Theme.BACKGROUND);
+        top.add(heading, BorderLayout.NORTH);
+        top.add(form, BorderLayout.CENTER);
+        main.add(top, BorderLayout.NORTH);
+
+        JPanel bottom = new JPanel(new BorderLayout(5, 5));
+        bottom.setBackground(Theme.BACKGROUND);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        buttons.setBackground(Theme.BACKGROUND);
 
         registerButton = new JButton("Register");
-        registerButton.setBounds(130, 120, 120, 30);
-        add(registerButton);
+        Theme.styleButton(registerButton, Theme.SUCCESS);
+        buttons.add(registerButton);
+        bottom.add(buttons, BorderLayout.CENTER);
 
-        statusLabel = new JLabel("");
-        statusLabel.setBounds(20, 165, 320, 40);
-        add(statusLabel);
+        statusLabel = new JLabel(" ");
+        statusLabel.setForeground(Theme.DANGER);
+        bottom.add(statusLabel, BorderLayout.SOUTH);
+
+        main.add(bottom, BorderLayout.SOUTH);
 
         registerButton.addActionListener(e -> tryRegister());
+
+        pack();
+        setSize(400, 280);
+        setLocationRelativeTo(null);
     }
 
     private void tryRegister() {
@@ -66,28 +95,39 @@ public class RegisterFrame extends JFrame {
         String confirm = new String(confirmField.getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
-            statusLabel.setText("Username and password cannot be empty.");
+            Theme.showStatus(statusLabel, "Username and password cannot be empty.", false);
             return;
         }
 
         if (!password.equals(confirm)) {
-            statusLabel.setText("Passwords do not match.");
+            Theme.showStatus(statusLabel, "Passwords do not match.", false);
             return;
         }
 
         try {
+            // Check BEFORE registering: only the very first user removes the fallback.
+            boolean hadFallback = false;
+            try {
+                hadFallback = userManager.userExists("admin");
+            } catch (Exception ignored) {
+            }
+
             boolean created = userManager.register(username, password);
 
             if (created) {
-                statusLabel.setText("Registered! You can now login.");
-                javax.swing.JOptionPane.showMessageDialog(this, "Account created. The fallback admin has been removed.");
+                String message = "Account '" + username + "' created! Please login.";
+                if (hadFallback) {
+                    message += "\nFallback admin removed for safety.";
+                }
+                Theme.showStatus(statusLabel, "Registered! You can now login.", true);
+                javax.swing.JOptionPane.showMessageDialog(this, message);
                 dispose();
             } else {
-                statusLabel.setText("That username is already taken.");
+                Theme.showStatus(statusLabel, "That username is already taken.", false);
             }
 
         } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            Theme.showStatus(statusLabel, "Error: " + e.getMessage(), false);
         }
     }
 }

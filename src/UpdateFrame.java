@@ -1,7 +1,11 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -25,51 +29,90 @@ public class UpdateFrame extends JFrame {
         this.uid = uid;
 
         setTitle("PrivateVaultSimple - Update Record");
-        setSize(600, 450);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(null);
+        setMinimumSize(new Dimension(480, 400));
+        setSize(600, 450);
 
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+        main.setBackground(Theme.BACKGROUND);
+        Theme.addPadding(main, 12);
+        setContentPane(main);
+
+        JLabel heading = new JLabel("Update Record");
+        heading.setFont(Theme.TITLE_FONT);
+        heading.setForeground(Theme.TEAL);
+        main.add(heading, BorderLayout.NORTH);
+
+        // Center holds the form and stretches with the window.
+        JPanel form = new JPanel(new BorderLayout(5, 8));
+        form.setBackground(Theme.BACKGROUND);
+
+        JPanel idRow = new JPanel(new BorderLayout(8, 0));
+        idRow.setBackground(Theme.BACKGROUND);
         JLabel idLabel = new JLabel("Record ID:");
-        idLabel.setBounds(20, 15, 70, 25);
-        add(idLabel);
-
-        idField = new JTextField();
-        idField.setBounds(100, 15, 120, 25);
-        add(idField);
-
+        idLabel.setForeground(Theme.TEXT);
+        idLabel.setPreferredSize(new Dimension(70, 25));
+        idField = new JTextField(8);
         loadButton = new JButton("Load");
-        loadButton.setBounds(230, 15, 90, 25);
-        add(loadButton);
+        Theme.styleButton(loadButton, Theme.PRIMARY);
+        idRow.add(idLabel, BorderLayout.WEST);
+        idRow.add(idField, BorderLayout.CENTER);
+        idRow.add(loadButton, BorderLayout.EAST);
 
+        JPanel titleRow = new JPanel(new BorderLayout(8, 0));
+        titleRow.setBackground(Theme.BACKGROUND);
         JLabel titleLabel = new JLabel("Title:");
-        titleLabel.setBounds(20, 55, 70, 25);
-        add(titleLabel);
+        titleLabel.setForeground(Theme.TEXT);
+        titleLabel.setPreferredSize(new Dimension(70, 25));
+        titleField = new JTextField(20);
+        titleRow.add(titleLabel, BorderLayout.WEST);
+        titleRow.add(titleField, BorderLayout.CENTER);
 
-        titleField = new JTextField();
-        titleField.setBounds(100, 55, 470, 25);
-        add(titleField);
-
+        JPanel contentRow = new JPanel(new BorderLayout(8, 0));
+        contentRow.setBackground(Theme.BACKGROUND);
         JLabel contentLabel = new JLabel("Content:");
-        contentLabel.setBounds(20, 95, 70, 25);
-        add(contentLabel);
-
-        contentArea = new JTextArea();
+        contentLabel.setForeground(Theme.TEXT);
+        contentLabel.setPreferredSize(new Dimension(70, 25));
+        contentArea = new JTextArea(8, 20);
+        contentArea.setLineWrap(true);
+        contentArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(contentArea);
-        scroll.setBounds(100, 95, 470, 180);
-        add(scroll);
+        contentRow.add(contentLabel, BorderLayout.WEST);
+        contentRow.add(scroll, BorderLayout.CENTER);
+
+        // Top rows stay compact, content gets all extra space.
+        JPanel topRows = new JPanel(new java.awt.GridLayout(2, 1, 0, 8));
+        topRows.setBackground(Theme.BACKGROUND);
+        topRows.add(idRow);
+        topRows.add(titleRow);
+
+        form.add(topRows, BorderLayout.NORTH);
+        form.add(contentRow, BorderLayout.CENTER);
+
+        main.add(form, BorderLayout.CENTER);
+
+        JPanel bottom = new JPanel(new BorderLayout(5, 5));
+        bottom.setBackground(Theme.BACKGROUND);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        buttons.setBackground(Theme.BACKGROUND);
 
         updateButton = new JButton("Update Record");
-        updateButton.setBounds(100, 290, 140, 30);
-        add(updateButton);
+        Theme.styleButton(updateButton, Theme.SUCCESS);
 
         closeButton = new JButton("Close");
-        closeButton.setBounds(250, 290, 100, 30);
-        add(closeButton);
+        Theme.styleButton(closeButton, Theme.MUTED);
 
-        statusLabel = new JLabel("");
-        statusLabel.setBounds(20, 335, 540, 25);
-        add(statusLabel);
+        buttons.add(updateButton);
+        buttons.add(closeButton);
+        bottom.add(buttons, BorderLayout.CENTER);
+
+        statusLabel = new JLabel(" ");
+        statusLabel.setForeground(Theme.DANGER);
+        bottom.add(statusLabel, BorderLayout.SOUTH);
+
+        main.add(bottom, BorderLayout.SOUTH);
 
         loadButton.addActionListener(e -> loadRecord());
         updateButton.addActionListener(e -> updateRecord());
@@ -84,18 +127,18 @@ public class UpdateFrame extends JFrame {
             Record record = recordManager.getRecord(uid, recordId);
 
             if (record == null) {
-                statusLabel.setText("No record found with ID " + recordId + ".");
+                Theme.showStatus(statusLabel, "No record found with ID " + recordId + ".", false);
                 return;
             }
 
             titleField.setText(record.getTitle());
             contentArea.setText(record.getContent());
-            statusLabel.setText("Loaded record " + recordId + ". Edit and click Update.");
+            Theme.showStatus(statusLabel, "Loaded record " + recordId + ". Edit and click Update.", true);
 
         } catch (NumberFormatException e) {
-            statusLabel.setText("Please enter a valid numeric ID.");
+            Theme.showStatus(statusLabel, "Please enter a valid numeric ID.", false);
         } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            Theme.showStatus(statusLabel, "Error: " + e.getMessage(), false);
         }
     }
 
@@ -104,7 +147,7 @@ public class UpdateFrame extends JFrame {
         String idText = idField.getText().trim();
 
         if (idText.isEmpty()) {
-            statusLabel.setText("Load a record first.");
+            Theme.showStatus(statusLabel, "Load a record first.", false);
             return;
         }
 
@@ -128,13 +171,13 @@ public class UpdateFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, message);
                 dispose();
             } else {
-                statusLabel.setText("Update failed. Check the ID and that fields are not empty.");
+                Theme.showStatus(statusLabel, "Update failed. Check the ID and that fields are not empty.", false);
             }
 
         } catch (NumberFormatException e) {
-            statusLabel.setText("Please enter a valid numeric ID.");
+            Theme.showStatus(statusLabel, "Please enter a valid numeric ID.", false);
         } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            Theme.showStatus(statusLabel, "Error: " + e.getMessage(), false);
         }
     }
 }

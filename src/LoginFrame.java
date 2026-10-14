@@ -1,7 +1,11 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
@@ -22,41 +26,71 @@ public class LoginFrame extends JFrame {
         this.recordManager = recordManager;
 
         setTitle("PrivateVaultSimple - Login");
-        setSize(360, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(null);
+        setResizable(false);
+
+        // Main panel uses BorderLayout so it stretches when resized.
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+        main.setBackground(Theme.BACKGROUND);
+        Theme.addPadding(main, 15);
+        setContentPane(main);
+
+        JLabel heading = new JLabel("Private Vault Login");
+        heading.setFont(Theme.TITLE_FONT);
+        heading.setForeground(Theme.PRIMARY);
+
+        // GridLayout rows stretch automatically (this gives free resizing).
+        JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+        form.setBackground(Theme.BACKGROUND);
 
         JLabel userLabel = new JLabel("Username:");
-        userLabel.setBounds(20, 20, 80, 25);
-        add(userLabel);
-
-        usernameField = new JTextField();
-        usernameField.setBounds(110, 20, 220, 25);
-        add(usernameField);
+        userLabel.setForeground(Theme.TEXT);
+        usernameField = new JTextField(15);
 
         JLabel passLabel = new JLabel("Password:");
-        passLabel.setBounds(20, 55, 80, 25);
-        add(passLabel);
+        passLabel.setForeground(Theme.TEXT);
+        passwordField = new JPasswordField(15);
 
-        passwordField = new JPasswordField();
-        passwordField.setBounds(110, 55, 220, 25);
-        add(passwordField);
+        form.add(userLabel);
+        form.add(usernameField);
+        form.add(passLabel);
+        form.add(passwordField);
+        // One wrapper in NORTH: heading on top, form below.
+        // (BorderLayout holds only one item per side, so we group them.)
+        JPanel top = new JPanel(new BorderLayout(0, 10));
+        top.setBackground(Theme.BACKGROUND);
+        top.add(heading, BorderLayout.NORTH);
+        top.add(form, BorderLayout.CENTER);
+        main.add(top, BorderLayout.NORTH);
+
+        JPanel bottom = new JPanel(new BorderLayout(5, 5));
+        bottom.setBackground(Theme.BACKGROUND);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        buttons.setBackground(Theme.BACKGROUND);
 
         loginButton = new JButton("Login");
-        loginButton.setBounds(110, 90, 100, 30);
-        add(loginButton);
+        Theme.styleButton(loginButton, Theme.PRIMARY);
 
         registerButton = new JButton("Register");
-        registerButton.setBounds(220, 90, 100, 30);
-        add(registerButton);
+        Theme.styleButton(registerButton, Theme.TEAL);
 
-        statusLabel = new JLabel("");
-        statusLabel.setBounds(20, 130, 300, 40);
-        add(statusLabel);
+        buttons.add(loginButton);
+        buttons.add(registerButton);
+        bottom.add(buttons, BorderLayout.CENTER);
+
+        statusLabel = new JLabel(" ");
+        statusLabel.setForeground(Theme.DANGER);
+        bottom.add(statusLabel, BorderLayout.SOUTH);
+
+        main.add(bottom, BorderLayout.SOUTH);
 
         loginButton.addActionListener(e -> tryLogin());
         registerButton.addActionListener(e -> openRegister());
+
+        pack();
+        setSize(380, 240);
+        setLocationRelativeTo(null);
     }
 
     private void openRegister() {
@@ -74,15 +108,15 @@ public class LoginFrame extends JFrame {
             User user = userManager.login(username, password);
 
             if (user != null) {
-                MainFrame mainFrame = new MainFrame(recordManager, user.getUid());
+                MainFrame mainFrame = new MainFrame(userManager, recordManager, user.getUid());
                 mainFrame.setVisible(true);
                 dispose();
             } else {
-                statusLabel.setText("Wrong username or password.");
+                Theme.showStatus(statusLabel, "Wrong username or password.", false);
             }
 
         } catch (Exception e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            Theme.showStatus(statusLabel, "Error: " + e.getMessage(), false);
         }
     }
 }

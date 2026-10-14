@@ -1,12 +1,16 @@
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.ArrayList;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 
 public class MainFrame extends JFrame {
 
@@ -16,65 +20,110 @@ public class MainFrame extends JFrame {
     private JButton viewAllButton;
     private JButton verifyButton;
     private JButton updateButton;
-    private JTextArea outputArea;
+    private JButton logoutButton;
+    private JTextPane outputArea;
 
+    private UserManager userManager;
     private RecordManager recordManager;
     private int uid;
 
-    public MainFrame(RecordManager recordManager, int uid) {
+    public MainFrame(UserManager userManager, RecordManager recordManager, int uid) {
 
+        this.userManager = userManager;
         this.recordManager = recordManager;
         this.uid = uid;
 
         setTitle("PrivateVaultSimple - Vault");
-        setSize(650, 550);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(null);
+        setMinimumSize(new Dimension(520, 420));
+        setSize(700, 600);
 
+        // BorderLayout resizes CENTER automatically when window grows.
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+        main.setBackground(Theme.BACKGROUND);
+        Theme.addPadding(main, 12);
+        setContentPane(main);
+
+        // ---- Top: input form ----
+        JPanel top = new JPanel(new BorderLayout(5, 8));
+        top.setBackground(Theme.BACKGROUND);
+
+        JPanel titleRow = new JPanel(new BorderLayout(8, 0));
+        titleRow.setBackground(Theme.BACKGROUND);
         JLabel titleLabel = new JLabel("Title:");
-        titleLabel.setBounds(20, 15, 60, 25);
-        add(titleLabel);
-
+        titleLabel.setForeground(Theme.TEXT);
+        titleLabel.setPreferredSize(new Dimension(60, 25));
         titleField = new JTextField();
-        titleField.setBounds(90, 15, 530, 25);
-        add(titleField);
+        titleRow.add(titleLabel, BorderLayout.WEST);
+        titleRow.add(titleField, BorderLayout.CENTER);
 
+        JPanel contentRow = new JPanel(new BorderLayout(8, 0));
+        contentRow.setBackground(Theme.BACKGROUND);
         JLabel contentLabel = new JLabel("Content:");
-        contentLabel.setBounds(20, 50, 60, 25);
-        add(contentLabel);
-
-        contentArea = new JTextArea();
+        contentLabel.setForeground(Theme.TEXT);
+        contentLabel.setPreferredSize(new Dimension(60, 25));
+        contentArea = new JTextArea(5, 20);
+        contentArea.setLineWrap(true);
+        contentArea.setWrapStyleWord(true);
         JScrollPane contentScroll = new JScrollPane(contentArea);
-        contentScroll.setBounds(90, 50, 530, 100);
-        add(contentScroll);
+        contentScroll.setPreferredSize(new Dimension(400, 100));
+        contentRow.add(contentLabel, BorderLayout.WEST);
+        contentRow.add(contentScroll, BorderLayout.CENTER);
+
+        top.add(titleRow, BorderLayout.NORTH);
+        top.add(contentRow, BorderLayout.CENTER);
+        main.add(top, BorderLayout.NORTH);
+
+        // ---- Middle: buttons in a row ----
+        JPanel buttonBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        buttonBar.setBackground(Theme.BACKGROUND);
 
         saveButton = new JButton("Save Record");
-        saveButton.setBounds(20, 160, 120, 30);
-        add(saveButton);
+        Theme.styleButton(saveButton, Theme.SUCCESS);
 
         viewAllButton = new JButton("View All");
-        viewAllButton.setBounds(150, 160, 120, 30);
-        add(viewAllButton);
+        Theme.styleButton(viewAllButton, Theme.PRIMARY);
 
         verifyButton = new JButton("Verify All");
-        verifyButton.setBounds(280, 160, 120, 30);
-        add(verifyButton);
+        Theme.styleButton(verifyButton, Theme.WARNING);
 
         updateButton = new JButton("Update Record");
-        updateButton.setBounds(410, 160, 130, 30);
-        add(updateButton);
+        Theme.styleButton(updateButton, Theme.TEAL);
 
-        outputArea = new JTextArea();
+        logoutButton = new JButton("Log Out");
+        Theme.styleButton(logoutButton, Theme.DANGER);
+
+        buttonBar.add(saveButton);
+        buttonBar.add(viewAllButton);
+        buttonBar.add(verifyButton);
+        buttonBar.add(updateButton);
+        buttonBar.add(logoutButton);
+
+        // Button bar + output stacked in center so both stretch.
+        JPanel center = new JPanel(new BorderLayout(0, 8));
+        center.setBackground(Theme.BACKGROUND);
+        center.add(buttonBar, BorderLayout.NORTH);
+
+        outputArea = new JTextPane();
         outputArea.setEditable(false);
+        outputArea.setBackground(Theme.CARD);
         JScrollPane outputScroll = new JScrollPane(outputArea);
-        outputScroll.setBounds(20, 205, 600, 300);
-        add(outputScroll);
+        center.add(outputScroll, BorderLayout.CENTER);
+
+        main.add(center, BorderLayout.CENTER);
 
         saveButton.addActionListener(e -> saveRecord());
         viewAllButton.addActionListener(e -> viewAll());
         verifyButton.addActionListener(e -> verifyAll());
         updateButton.addActionListener(e -> openUpdate());
+        logoutButton.addActionListener(e -> doLogout());
+    }
+
+    private void doLogout() {
+        LoginFrame login = new LoginFrame(userManager, recordManager);
+        login.setVisible(true);
+        dispose();
     }
 
     private void openUpdate() {
@@ -111,21 +160,22 @@ public class MainFrame extends JFrame {
             outputArea.setText("");
 
             if (records.isEmpty()) {
-                outputArea.setText("No records yet.");
+                Theme.append(outputArea, "No records yet.\n", Theme.MUTED);
                 return;
             }
 
             for (Record r : records) {
-                outputArea.append("ID      : " + r.getRecordId() + "\n");
-                outputArea.append("Title   : " + r.getTitle() + "\n");
-                outputArea.append("Content : " + r.getContent() + "\n");
-                outputArea.append("Created : " + r.getCreatedAt() + "\n");
-                outputArea.append("Hash    : " + r.getHash() + "\n");
-                outputArea.append("-------------------------------------\n");
+                Theme.append(outputArea, "ID      : " + r.getRecordId() + "\n", Theme.PRIMARY, true);
+                Theme.append(outputArea, "Title   : " + r.getTitle() + "\n", Theme.TEXT);
+                Theme.append(outputArea, "Content : " + r.getContent() + "\n", Theme.TEXT);
+                Theme.append(outputArea, "Created : " + r.getCreatedAt() + "\n", Theme.MUTED);
+                Theme.append(outputArea, "Hash    : " + r.getHash() + "\n", Theme.MUTED);
+                Theme.append(outputArea, "-------------------------------------\n", Theme.MUTED);
             }
 
         } catch (Exception e) {
-            outputArea.setText("Error: " + e.getMessage());
+            outputArea.setText("");
+            Theme.append(outputArea, "Error: " + e.getMessage() + "\n", Theme.DANGER, true);
         }
     }
 
@@ -137,22 +187,27 @@ public class MainFrame extends JFrame {
             outputArea.setText("");
 
             if (records.isEmpty()) {
-                outputArea.setText("No records yet.");
+                Theme.append(outputArea, "No records yet.\n", Theme.MUTED);
                 return;
             }
 
             for (Record r : records) {
                 boolean ok = recordManager.verifyRecord(r);
 
-                outputArea.append("Record ID: " + r.getRecordId() + " (" + r.getTitle() + ")\n");
-                outputArea.append("  Stored Hash     : " + r.getHash() + "\n");
-                outputArea.append("  Calculated Hash : " + HashUtil.generateHash(r.getContent()) + "\n");
-                outputArea.append("  Result          : " + (ok ? "VALID" : "TAMPERED") + "\n");
-                outputArea.append("-------------------------------------\n");
+                Theme.append(outputArea, "Record ID: " + r.getRecordId() + " (" + r.getTitle() + ")\n", Theme.PRIMARY, true);
+                Theme.append(outputArea, "  Stored Hash     : " + r.getHash() + "\n", Theme.MUTED);
+                Theme.append(outputArea, "  Calculated Hash : " + HashUtil.generateHash(r.getContent()) + "\n", Theme.MUTED);
+                if (ok) {
+                    Theme.append(outputArea, "  Result          : VALID\n", Theme.SUCCESS, true);
+                } else {
+                    Theme.append(outputArea, "  Result          : TAMPERED\n", Theme.DANGER, true);
+                }
+                Theme.append(outputArea, "-------------------------------------\n", Theme.MUTED);
             }
 
         } catch (Exception e) {
-            outputArea.setText("Error: " + e.getMessage());
+            outputArea.setText("");
+            Theme.append(outputArea, "Error: " + e.getMessage() + "\n", Theme.DANGER, true);
         }
     }
 }

@@ -2,8 +2,11 @@
 
 A simple desktop vault for storing private records with **SHA-256 integrity checking**.
 Built with Java, Swing (GUI), JDBC and SQLite. Every record is stored with a hash of its
-content; a **Verify All** action recalculates the hash and reports **VALID** or **TAMPERED**,
-so any modification made directly to the database is detected.
+content; a **Verify All** action recalculates the hash and reports **VALID** (green) or
+**TAMPERED** (red), so any modification made directly to the database is detected.
+
+UI: login/register windows are small fixed-size dialogs; the vault and update windows are
+colored and resizable (layout managers only, no extra libraries).
 
 ---
 
@@ -103,20 +106,23 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 
 - On the very first run the app prints a fallback login:
   **username `admin`, password `admin123`**
-- The **Register** button creates your own account. As soon as you register, the fallback
-  `admin` account is deleted automatically, so there is no backdoor left behind.
+- The **Register** button creates your own account. The first account you register deletes
+  the fallback `admin` automatically, so there is no backdoor left behind.
+- The confirmation popup shows `Account '<name>' created! Please login.` Every time. The
+  extra `Fallback admin removed for safety.` line appears only for that very first account.
+- Use **Log Out** (red button in the vault window) to return to the login screen.
 
 ---
 
 ## 6. Quick demo (tamper detection)
 
 1. Login → **Save Record** (e.g. title `My Certificate`, content `Certificate Number: ABC123`)
-2. **Verify All** → shows **VALID** (stored hash equals calculated hash)
+2. **Verify All** → shows **VALID** in green (stored hash equals calculated hash)
 3. Close the app and modify the database **without** using the app:
    - macOS/Linux: `sqlite3 vault_simple.db "UPDATE vault_records SET content='HACKED';"`
    - Windows: download [DB Browser for SQLite](https://sqlitebrowser.org/), open `vault_simple.db`,
      edit the `content` cell, save
-4. Start the app again → login → **Verify All** → that record now shows **TAMPERED**
+4. Start the app again → login → **Verify All** → that record now shows **TAMPERED** in red
 
 ---
 
@@ -135,10 +141,11 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 PrivateVaultSimple/
 ├── src/
 │   ├── Main.java              entry point: connect DB, open login window
-│   ├── LoginFrame.java        login window
-│   ├── RegisterFrame.java     registration window
-│   ├── MainFrame.java         vault window (save / view all / verify / open update)
-│   ├── UpdateFrame.java       update-record window
+│   ├── LoginFrame.java        login window (fixed-size, non-resizable dialog)
+│   ├── RegisterFrame.java     registration window (fixed-size, non-resizable dialog)
+│   ├── MainFrame.java         vault window (resizable: save / view all / verify / update / log out)
+│   ├── UpdateFrame.java       update-record window (resizable: title stays one line, content stretches)
+│   ├── Theme.java             shared colors + tiny button/status/text helpers
 │   ├── DatabaseManager.java   JDBC connection, creates tables, seeds fallback admin
 │   ├── UserManager.java       register + login
 │   ├── RecordManager.java     add / get / update / list / verify records
