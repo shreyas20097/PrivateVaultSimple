@@ -10,41 +10,112 @@ colored and resizable (layout managers only, no extra libraries).
 
 ---
 
-## 1. Requirements
+## 1. What you need
 
-- **JDK 8 or newer** (Java 11+ recommended) with `java` and `javac` available
-  - Check: `java -version` and `javac -version`
-  - Windows: install [Eclipse Temurin JDK](https://adoptium.net/) (or Oracle JDK), tick *Set JAVA_HOME*
-  - macOS: `brew install openjdk` then `export PATH=$(/usr/libexec/java_home)/bin:$PATH`
-  - Ubuntu/Debian: `sudo apt install default-jdk`
-- **Git**
+- **JDK 8 or newer** (Java 17 recommended) with `java` and `javac` on your PATH
+- **Git** (to clone the repo)
 - No database server needed — SQLite is embedded in `lib/sqlite-jdbc.jar`, already included
+- Optional, only for the tamper demo in step 6: a way to edit the `.db` file
+  - macOS/Linux: the `sqlite3` command-line tool
+  - Windows: [DB Browser for SQLite](https://sqlitebrowser.org/) (easiest)
 
 ---
 
-## 2. Clone the repository
+## 2. Install prerequisites
+
+### Windows 10 / 11
+
+1. **Install Java (JDK 17):**
+   - Easiest: download the MSI installer from [adoptium.net](https://adoptium.net/) (Eclipse Temurin 17, Windows x64, JDK).
+   - During setup, tick **Set JAVA_HOME variable** and **Add to PATH** (sometimes labelled *JavaSoft (Oracle) registry keys* — leave defaults otherwise).
+   - Alternative with [winget](https://learn.microsoft.com/windows/package-manager/) (already on Windows 11, installable on 10):
+     ```powershell
+     winget install EclipseAdoptium.Temurin.17.JDK
+     ```
+   - Close and reopen your terminal afterwards, then check:
+     ```bat
+     java -version
+     javac -version
+     ```
+     Both should print a version. If `javac` says *"not recognized"*, you opened the terminal before installing — open a new one. If it still fails, reinstall and make sure the PATH option was ticked.
+2. **Install Git:**
+   - Download from [git-scm.com](https://git-scm.com/download/win) and install with defaults (this also gives you **Git Bash**, which can run most `bash` commands).
+   - Or: `winget install Git.Git`
+   - Check in a new terminal:
+     ```bat
+     git --version
+     ```
+3. **Optional (tamper demo):** install [DB Browser for SQLite](https://sqlitebrowser.org/dl/) — download the Windows installer, open `vault_simple.db` with it later.
+   - Or: `winget install DBBrowserForSQLite.DBBrowserForSQLite`
+
+### macOS (Intel and Apple Silicon)
+
+1. **Install Homebrew** (skip if you already have `brew`). Open **Terminal** and run:
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+2. **Install Java, Git, sqlite3:**
+   ```bash
+   brew install openjdk@17 git sqlite
+   ```
+3. **Put Java on your PATH** (macOS does not do this automatically for Homebrew JDKs):
+   ```bash
+   echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zprofile
+   source ~/.zprofile
+   ```
+   - On older Intel Macs the path is `/usr/local/opt/openjdk@17/bin` instead of `/opt/homebrew/opt/openjdk@17/bin`. If unsure, run `brew --prefix` and adjust.
+4. **Check everything:**
+   ```bash
+   java -version
+   javac -version
+   git --version
+   sqlite3 --version
+   ```
+   All four should print versions without errors.
+
+### Linux (Debian / Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install -y default-jdk git sqlite3
+java -version && javac -version && git --version && sqlite3 --version
+```
+Fedora/RHEL: `sudo dnf install -y java-17-openjdk-devel git sqlite` instead.
+
+---
+
+## 3. Clone the repository
 
 This repository is **private**, so you need access plus a way to authenticate.
 
 **SSH (recommended, if your SSH key is linked to GitHub):**
 ```bash
 git clone git@github.com:shreyas20097/PrivateVaultSimple.git
+cd PrivateVaultSimple
 ```
 
 **HTTPS:**
 ```bash
 git clone https://github.com/shreyas20097/PrivateVaultSimple.git
+cd PrivateVaultSimple
 ```
 When prompted: username = your GitHub username, password = a **Personal Access Token**, *not*
 your GitHub account password (GitHub disabled password auth for git operations).
 Create a token at: GitHub → Settings → Developer settings → Personal access tokens → *Fine-grained
 tokens* → grant **Contents: Read-only**.
 
+> Windows tip: if the terminal asks for credentials every time, use **Git Bash** from the
+> Git install above, or clone via [GitHub Desktop](https://desktop.github.com/) and open the
+> folder in a terminal afterwards.
+
 ---
 
-## 3. Build and run
+## 4. Build and run
 
-### Linux / macOS
+> Run all commands **from inside the `PrivateVaultSimple` folder** (the database file
+> `vault_simple.db` is created in whichever folder you run from).
+
+### macOS / Linux
 
 ```bash
 cd PrivateVaultSimple
@@ -54,7 +125,7 @@ javac -cp lib/sqlite-jdbc.jar -d bin src/*.java
 java -cp bin:lib/sqlite-jdbc.jar Main
 ```
 
-Or just use the included script:
+Or just use the included script (macOS/Linux only):
 ```bash
 ./run-simple.sh
 ```
@@ -88,9 +159,16 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 > 2. `src\*.java` does **not** expand automatically in cmd/PowerShell — that's why the commands
 >    above build a file list first (`sources.txt` / `Get-ChildItem`)
 
+### If it does not start
+
+- `java: command not found` / `'javac' is not recognized` → JDK not installed or terminal opened before install. Redo step 2, open a **new** terminal.
+- `error: file not found: src\*.java` → you are not inside the `PrivateVaultSimple` folder. `cd` there first.
+- `database is locked` → close any other copy of the app or DB Browser holding `vault_simple.db`.
+- Blank window / tiny text on high-DPI Windows → update the JDK (Temurin 17+) and set display scaling to 100% while testing.
+
 ---
 
-## 4. Optional: open in NetBeans IDE
+## 5. Optional: open in NetBeans IDE
 
 1. **File → New Project → Java with Existing Sources**
 2. **Code Assistance / Project Folder:** select the cloned `PrivateVaultSimple` folder
@@ -102,7 +180,7 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 
 ---
 
-## 5. First launch
+## 6. First launch
 
 - On the very first run the app prints a fallback login:
   **username `admin`, password `admin123`**
@@ -114,7 +192,7 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 
 ---
 
-## 6. Quick demo (tamper detection)
+## 7. Quick demo (tamper detection)
 
 1. Login → **Save Record** (e.g. title `My Certificate`, content `Certificate Number: ABC123`)
 2. **Verify All** → shows **VALID** in green (stored hash equals calculated hash)
@@ -126,7 +204,7 @@ java -cp "bin;lib/sqlite-jdbc.jar" Main
 
 ---
 
-## 7. Notes
+## 8. Notes
 
 - The database `vault_simple.db` is created automatically in the folder you run the app from.
   Delete it to reset everything to a blank vault.
